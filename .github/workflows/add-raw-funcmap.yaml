@@ -5,6 +5,9 @@ on:
     files:
       - 'CURRENT_HELM_VERSION.txt'
 
+permissions:
+  contents: write
+
 jobs:
   add_raw_funcmap:
     runs-on: ubuntu-latest
