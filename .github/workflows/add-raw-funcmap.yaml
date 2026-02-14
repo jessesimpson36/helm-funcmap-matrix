@@ -26,6 +26,9 @@ jobs:
       - name: Run program
         run: |
           ./helm/bin/helm funcmap | tee ./1-raw/$(cat CURRENT_HELM_VERSION.txt ).txt
+          cat ./1-raw/$(cat CURRENT_HELM_VERSION.txt ).txt | sort | uniq | grep -v 'Listing functions' | tee ./2-sorted/$(cat CURRENT_HELM_VERSION.txt ).txt
+          cp ./2-sorted/$(cat CURRENT_HELM_VERSION.txt ).txt ./3-raw-sorted/$(cat CURRENT_HELM_VERSION.txt ).txt
+
 
       - uses: EndBug/add-and-commit@v9
         with:
