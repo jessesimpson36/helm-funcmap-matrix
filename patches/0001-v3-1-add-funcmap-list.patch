@@ -1,0 +1,116 @@
+From 3c7fef7cb80bb3442406c6d9f280e737feea3c12 Mon Sep 17 00:00:00 2001
+From: Jesse Simpson <jesse.simpson36@gmail.com>
+Date: Fri, 23 Jan 2026 17:36:48 -0500
+Subject: [PATCH] add funcmap list
+
+Signed-off-by: Jesse Simpson <jesse.simpson36@gmail.com>
+---
+ cmd/helm/funcmap.go | 65 +++++++++++++++++++++++++++++++++++++++++++++
+ cmd/helm/root.go    |  1 +
+ pkg/engine/funcs.go |  6 +++++
+ 3 files changed, 72 insertions(+)
+ create mode 100644 cmd/helm/funcmap.go
+
+diff --git a/cmd/helm/funcmap.go b/cmd/helm/funcmap.go
+new file mode 100644
+index 000000000..ffce1c57f
+--- /dev/null
++++ b/cmd/helm/funcmap.go
+@@ -0,0 +1,65 @@
++/*
++Copyright The Helm Authors.
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++    http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++*/
++
++package main
++
++import (
++	"fmt"
++	"io"
++
++	"github.com/spf13/cobra"
++
++	"helm.sh/helm/v3/pkg/engine"
++)
++
++const funcmapDesc = `
++This command lists all of the templating functions helm supports
++`
++
++type funcmapOptions struct{}
++
++func newFuncmapCmd(out io.Writer) *cobra.Command {
++	o := &funcmapOptions{}
++
++	cmd := &cobra.Command{
++		Use:   "funcmap",
++		Short: "Lists all of the functions in funcmap",
++		Long:  funcmapDesc,
++		ValidArgsFunction: func(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
++			if len(args) == 0 {
++				// Allow file completion when completing the argument for the name
++				// which could be a path
++				return nil, cobra.ShellCompDirectiveDefault
++			}
++			// No more completions, so disable file completion
++			return noMoreArgsComp()
++		},
++		RunE: func(_ *cobra.Command, args []string) error {
++			return o.run(out)
++		},
++	}
++
++	return cmd
++}
++
++func (o *funcmapOptions) run(out io.Writer) error {
++	fmt.Fprintf(out, "Listing functions\n")
++	funcMap := engine.FuncMap()
++	for funcName := range funcMap {
++		fmt.Fprintln(out, funcName)
++	}
++	return nil
++}
+diff --git a/cmd/helm/root.go b/cmd/helm/root.go
+index c5f8cc708..558e75325 100644
+--- a/cmd/helm/root.go
++++ b/cmd/helm/root.go
+@@ -186,6 +186,7 @@ func newRootCmd(actionConfig *action.Configuration, out io.Writer, args []string
+ 
+ 		newCompletionCmd(out),
+ 		newEnvCmd(out),
++		newFuncmapCmd(out),
+ 		newPluginCmd(out),
+ 		newVersionCmd(out),
+ 
+diff --git a/pkg/engine/funcs.go b/pkg/engine/funcs.go
+index 8f05a3a1d..cfe20ab08 100644
+--- a/pkg/engine/funcs.go
++++ b/pkg/engine/funcs.go
+@@ -40,6 +40,12 @@ import (
+ //
+ // These are late-bound in Engine.Render().  The
+ // version included in the FuncMap is a placeholder.
++// FuncMap returns the function map used by Helm's template engine.
++// This includes sprig functions (minus env/expandenv) plus Helm-specific functions.
++func FuncMap() template.FuncMap {
++	return funcMap()
++}
++
+ func funcMap() template.FuncMap {
+ 	f := sprig.TxtFuncMap()
+ 	delete(f, "env")
+-- 
+2.52.0
+

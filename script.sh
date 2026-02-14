@@ -1,0 +1,1 @@
+V3COMMIT=./0001-v3-1-add-funcmap-list.patch ; V4COMMIT=./0001-v4-funcmap-command.patch ; for version in $(cat versions ); do git stash; rm cmd/helm/funcmap.go pkg/cmd/funcmap.go ; make clean;  git checkout v$version ; echo $version;  if ! git apply $V3COMMIT ; then git apply $V4COMMIT; fi ; make ; ./bin/helm funcmap | tee $version.txt ; git stash ; done

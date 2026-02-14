@@ -1,0 +1,107 @@
+From 19e4034f8066e1fa6a02b5d24bfe7ccf63128bb7 Mon Sep 17 00:00:00 2001
+From: Jesse Simpson <jesse.simpson36@gmail.com>
+Date: Sat, 14 Feb 2026 03:34:55 +0100
+Subject: [PATCH] v4 funcmap command
+
+Signed-off-by: Jesse Simpson <jesse.simpson36@gmail.com>
+---
+ pkg/cmd/funcmap.go  | 56 +++++++++++++++++++++++++++++++++++++++++++++
+ pkg/cmd/root.go     |  1 +
+ pkg/engine/funcs.go |  6 +++++
+ 3 files changed, 63 insertions(+)
+ create mode 100644 pkg/cmd/funcmap.go
+
+diff --git a/pkg/cmd/funcmap.go b/pkg/cmd/funcmap.go
+new file mode 100644
+index 000000000..bf4991f7d
+--- /dev/null
++++ b/pkg/cmd/funcmap.go
+@@ -0,0 +1,56 @@
++/*
++Copyright The Helm Authors.
++
++Licensed under the Apache License, Version 2.0 (the "License");
++you may not use this file except in compliance with the License.
++You may obtain a copy of the License at
++
++    http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing, software
++distributed under the License is distributed on an "AS IS" BASIS,
++WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++See the License for the specific language governing permissions and
++limitations under the License.
++*/
++
++package cmd
++
++import (
++	"fmt"
++	"io"
++
++	"github.com/spf13/cobra"
++
++	"helm.sh/helm/v4/pkg/engine"
++)
++
++const funcmapDesc = `
++This command lists all of the templating functions helm supports
++`
++
++type funcmapOptions struct{}
++
++func newFuncmapCmd(out io.Writer) *cobra.Command {
++	o := &funcmapOptions{}
++
++	cmd := &cobra.Command{
++		Use:   "funcmap",
++		Short: "Lists all of the functions in funcmap",
++		Long:  funcmapDesc,
++		RunE: func(_ *cobra.Command, args []string) error {
++			return o.run(out)
++		},
++	}
++
++	return cmd
++}
++
++func (o *funcmapOptions) run(out io.Writer) error {
++	fmt.Fprintf(out, "Listing functions\n")
++	funcMap := engine.FuncMap()
++	for funcName := range funcMap {
++		fmt.Fprintln(out, funcName)
++	}
++	return nil
++}
+diff --git a/pkg/cmd/root.go b/pkg/cmd/root.go
+index c23362628..095e3dd8e 100644
+--- a/pkg/cmd/root.go
++++ b/pkg/cmd/root.go
+@@ -257,6 +257,7 @@ func newRootCmdWithConfig(actionConfig *action.Configuration, out io.Writer, arg
+ 	cmd.AddCommand(
+ 		// chart commands
+ 		newCreateCmd(out),
++		newFuncmapCmd(out),
+ 		newDependencyCmd(actionConfig, out),
+ 		newPullCmd(actionConfig, out),
+ 		newShowCmd(actionConfig, out),
+diff --git a/pkg/engine/funcs.go b/pkg/engine/funcs.go
+index a97f8f104..4a91ceb6e 100644
+--- a/pkg/engine/funcs.go
++++ b/pkg/engine/funcs.go
+@@ -42,6 +42,12 @@ import (
+ //
+ // These are late-bound in Engine.Render().  The
+ // version included in the FuncMap is a placeholder.
++// FuncMap returns the function map used by Helm's template engine.
++// This includes sprig functions (minus env/expandenv) plus Helm-specific functions.
++func FuncMap() template.FuncMap {
++	return funcMap()
++}
++
+ func funcMap() template.FuncMap {
+ 	f := sprig.TxtFuncMap()
+ 	delete(f, "env")
+-- 
+2.52.0
+
