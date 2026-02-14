@@ -1,11 +1,17 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended"
+  ],
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^CURRENT_HELM_VERSION\\.txt$"],
-      "matchStrings": ["(?<currentValue>\\S+)"],
+      "managerFilePatterns": [
+        "/^CURRENT_HELM_VERSION\\.txt$/"
+      ],
+      "matchStrings": [
+        "(?<currentValue>\\S+)"
+      ],
       "depNameTemplate": "helm/helm",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.+)$"
@@ -13,7 +19,9 @@
   ],
   "packageRules": [
     {
-      "matchDepNames": ["helm/helm"],
+      "matchDepNames": [
+        "helm/helm"
+      ],
       "automerge": true
     }
   ]
