@@ -8,7 +8,12 @@
       "matchStrings": ["(?<currentValue>\\S+)"],
       "depNameTemplate": "helm/helm",
       "datasourceTemplate": "github-releases",
-      "extractVersionTemplate": "^v(?<version>.+)$",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchDepNames": ["helm/helm"],
       "automerge": true
     }
   ]
