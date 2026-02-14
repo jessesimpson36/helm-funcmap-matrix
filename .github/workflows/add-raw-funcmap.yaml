@@ -1,0 +1,32 @@
+on:
+  push:
+    branches:
+      - main
+    files:
+      - 'CURRENT_HELM_VERSION.txt'
+
+jobs:
+  add_raw_funcmap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Clone helm and apply patch
+        run: |
+          make clone_helm
+          cd helm
+          git checkout v$(cat ../CURRENT_HELM_VERSION.txt)
+          git apply ../patches/0001-v4-funcmap-command.patch
+          make
+
+      - name: Run program
+        run: |
+          ./helm/bin/helm funcmap | tee ./1-raw/$(cat CURRENT_HELM_VERSION.txt ).txt
+
+      - uses: EndBug/add-and-commit@v9
+        with:
+          push: true
+          author_name: github-actions
+          message: "add raw funcmap"
+
