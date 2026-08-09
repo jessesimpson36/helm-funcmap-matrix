@@ -29,7 +29,7 @@ jobs:
           cat ./1-raw/$(cat CURRENT_HELM_VERSION.txt ).txt | sort | uniq | grep -v 'Listing functions' | tee ./2-sorted/$(cat CURRENT_HELM_VERSION.txt ).txt
           cp ./2-sorted/$(cat CURRENT_HELM_VERSION.txt ).txt ./3-diff/$(cat CURRENT_HELM_VERSION.txt ).txt
 
-      - uses: EndBug/add-and-commit@v9
+      - uses: EndBug/add-and-commit@v11
         with:
           push: true
           author_name: github-actions
